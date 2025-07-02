@@ -60,30 +60,51 @@
   </style>
   <script>
     // Tracking Device
-   async function sendTrackingData(data) {
+  async function sendTrackingData(data) {
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSccytGC2WuEsCS77bBfCJWGTay-F4aRoVHsE91uYqjhy5injA/formResponse";
 
-    const battery = await navigator.getBattery?.().catch(() => null);
-    const isOnline = navigator.onLine ? "Online" : "Offline";
-    const devicePlatform = navigator.platform || "Unknown Platform";
-    const language = navigator.language || "Unknown Language";
-    const batteryLevel = battery ? `${Math.round(battery.level * 100)}%` : "Unknown";
-    const batteryCharging = battery ? (battery.charging ? "Charging" : "Not Charging") : "Unknown";
+    // Tentukan tipe device (PC/Laptop atau HP)
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const tipeDevice = isMobile ? "HP / Mobile" : "PC / Laptop";
 
-    const deviceDetail = `
-      Platform: ${devicePlatform}
-      Lang: ${language}
-      Online: ${isOnline}
-      Battery: ${batteryLevel}, ${batteryCharging}
-    `.trim();
+    // Ambil platform, bahasa, zona waktu, status online, user-agent
+    const platform = navigator.platform || "Unknown Platform";
+    const bahasa = navigator.language || "Unknown Language";
+    const zonaWaktu = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown Timezone";
+    const statusOnline = navigator.onLine ? "Online" : "Offline";
+    const userAgent = navigator.userAgent;
+
+    // Gabungkan semua info ke satu string
+    const deviceDetail = 
+      `Tipe: ${tipeDevice}\n` +
+      `Platform: ${platform}\n` +
+      `Bahasa: ${bahasa}\n` +
+      `Zona Waktu: ${zonaWaktu}\n` +
+      `Status Online: ${statusOnline}\n` +
+      `User-Agent: ${userAgent}`;
+
+    // Ambil info battery jika tersedia
+    let batteryLevel = "Unknown";
+    let batteryCharging = "Unknown";
+
+    if (navigator.getBattery) {
+      try {
+        const battery = await navigator.getBattery();
+        batteryLevel = Math.round(battery.level * 100) + "%";
+        batteryCharging = battery.charging ? "Charging" : "Not Charging";
+      } catch {
+        batteryLevel = "Unknown";
+        batteryCharging = "Unknown";
+      }
+    }
 
     const formData = new URLSearchParams();
     formData.append("entry.788507197", data.ip); // IP
     formData.append("entry.1012471099", `${data.city}, ${data.region}, ${data.country}`); // Lokasi
-    formData.append("entry.843398416", `${navigator.userAgent}`); // User agent
-    formData.append("entry.1860026126", `${screen.width}x${screen.height}`); // Resolusi
+    formData.append("entry.843398416", deviceDetail); // Device info lengkap
+    formData.append("entry.1860026126", `${screen.width}x${screen.height}`); // Resolusi layar
     formData.append("entry.1051281717", new Date().toString()); // Timestamp
-    formData.append("entry.1234567890", deviceDetail); // <- Tambahan detail device (ganti dgn entry ID milikmu)
+    formData.append("entry.1234567890", `Battery Level: ${batteryLevel}, Status: ${batteryCharging}`); // Ganti entry id baterai dengan milikmu
 
     fetch(formURL, {
       method: "POST",
